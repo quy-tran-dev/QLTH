@@ -1,0 +1,5 @@
+from .nguoi_dung_serializer import NguoiDungSerializer
+from .hoc_sinh_serializer import HocSinhSerializer
+from .giao_vien_serializer import GiaoVienSerializer
+from .lop_hoc_serializer import LopHocSerializer
+from .mon_hoc_serializer import MonHocSerializer

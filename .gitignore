@@ -1,0 +1,25 @@
+# BẢO MẬT (Tuyệt đối không đẩy lên)
+.env
+
+# THƯ MỤC DATABASE CỦA DOCKER
+postgres_data/
+
+# FILE RÁC CỦA PYTHON
+__pycache__/
+*.py[cod]
+*$py.class
+
+# MÔI TRƯỜNG ẢO (Nếu bạn có xài ở ngoài máy thật)
+venv/
+env/
+.venv/
+
+# FILE DATABASE MẶC ĐỊNH CỦA DJANGO (Nếu có sinh ra)
+db.sqlite3
+
+# FILE CẤU HÌNH CỦA IDE (VSCode, PyCharm)
+.vscode/
+.idea/
+
+# THƯ MỤC CHỨA FILE UPLOAD/MEDIA
+media/
