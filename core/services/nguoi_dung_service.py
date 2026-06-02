@@ -1,3 +1,7 @@
+from datetime import timedelta
+
+from rest_framework_simplejwt.tokens import AccessToken
+
 from core.models import NguoiDung
 
 
@@ -5,11 +9,7 @@ class NguoiDungService:
 
     @staticmethod
     def validate_unique(username=None, cccd=None, exclude_user_id=None):
-        """
-        Hàm dùng chung để check trùng lặp Username và CCCD cho mọi Role.
-        - Lúc Create: Không truyền exclude_user_id.
-        - Lúc Update: Truyền ID của User đang sửa vào exclude_user_id để bỏ qua chính nó.
-        """
+
         if username:
             query = NguoiDung.objects.filter(username=username)
             if exclude_user_id:
@@ -23,3 +23,139 @@ class NguoiDungService:
                 query = query.exclude(pk=exclude_user_id)
             if query.exists():
                 raise ValueError(f"Số CCCD '{cccd}' đã được đăng ký trong hệ thống!")
+
+    @staticmethod
+    def create_profile(data, vai_tro, trang_thai=True):
+        """
+        Hàm chuyên trách Tạo Mới tài khoản Người Dùng.
+        """
+        # 1. Kiểm tra trùng lặp trước khi tạo
+        NguoiDungService.validate_unique(username=data.get('username'), cccd=data.get('cccd'))
+
+        # 2. Tiến hành tạo User
+        return NguoiDung.objects.create_user(
+            username=data['username'],
+            password=data.get('password', '123456'),  # Pass mặc định nếu không truyền
+            ho_ten=data['ho_ten'],
+            cccd=data.get('cccd'),
+            vai_tro=vai_tro,
+            trang_thai=trang_thai
+        )
+
+    @staticmethod
+    def update_profile(user, data):
+        """
+        Hàm chuyên trách xử lý cập nhật thông tin chung của Người Dùng.
+        """
+        # 1. Gọi hàm check trùng ngay tại đây
+        NguoiDungService.validate_unique(
+            username=data.get('username'),
+            cccd=data.get('cccd'),
+            exclude_user_id=user.pk
+        )
+
+        # 2. Xử lý gán data
+        if 'username' in data: user.username = data['username']
+        if 'cccd' in data and data['cccd']: user.cccd = data['cccd']
+        if 'ho_ten' in data: user.ho_ten = data['ho_ten']
+        if 'trang_thai' in data:
+            raw_status = data['trang_thai']
+            user.trang_thai = raw_status.lower() in ['true', '1', 't', 'yes'] if isinstance(raw_status, str) else bool(
+                raw_status)
+
+        user.save()
+        return user
+
+    @staticmethod
+    def generate_reset_password_token(username: str) -> str:
+        """
+        Kiểm tra người dùng và sinh một mã mã hóa JWT có thời hạn ngắn (15 phút)
+        để phục vụ quên mật khẩu.
+        """
+        try:
+            user = NguoiDung.objects.get(username=username, trang_thai=True)
+        except NguoiDung.DoesNotExist:
+            raise ValueError("Tên đăng nhập không tồn tại hoặc tài khoản đã bị khóa!")
+
+        # Tạo một AccessToken trống
+        token = AccessToken.for_user(user)
+
+        # Cấu hình lại thời gian hết hạn cực ngắn cho bảo mật (15 phút)
+        token.set_exp(lifetime=timedelta(minutes=15))
+
+        # Gắn thêm nhãn (Claim) đặc thù để chứng minh token này CHỈ DÙNG ĐỔI PASS
+        token['action'] = 'reset_password'
+
+        return str(token)
+
+    @staticmethod
+    def reset_password_with_token(token_str: str, new_password: str):
+        """
+        Giải mã Token, kiểm tra tính hợp lệ và cập nhật mật khẩu mới.
+        """
+        if not new_password or len(new_password) < 6:
+            raise ValueError("Mật khẩu mới phải từ 6 ký tự trở lên!")
+
+        try:
+            # Giải mã token (Nếu hết hạn hoặc bị sửa đổi, nó sẽ văng lỗi ngay tại đây)
+            token = AccessToken(token_str)
+
+            # Kiểm tra xem có đúng là token quên mật khẩu không
+            if token.get('action') != 'reset_password':
+                raise ValueError("Mã xác thực không đúng mục đích!")
+
+            # Lấy user_id lưu bên trong token
+            user_id = token.get('user_id')
+            user = NguoiDung.objects.get(pk=user_id, trang_thai=True)
+
+        except Exception:
+            raise ValueError("Mã xác thực (Token) không hợp lệ hoặc đã hết hạn!")
+
+        # Tiến hành đổi mật khẩu mã hóa chuẩn Django
+        user.set_password(new_password)
+        user.save()
+        return user
+
+    @staticmethod
+    def clean_excel_row(row) -> dict:
+        """
+        GOM LOGIC VỀ ĐÂY: Rút trích, cắt khoảng trắng, ép kiểu dữ liệu thô từ Excel.
+        Trả về một dict chứa data đã được chuẩn hóa.
+        """
+        username = str(row.get('Tên Đăng Nhập', '')).strip()
+        ho_ten = str(row.get('Họ Tên', '')).strip()
+
+        cccd_val = str(row.get('CCCD', '')).strip()
+        cccd = None if (cccd_val == 'nan' or not cccd_val) else cccd_val
+
+        mat_khau_val = str(row.get('Mật Khẩu', '123456')).strip()
+        password = '123456' if (mat_khau_val == 'nan' or not mat_khau_val) else mat_khau_val
+
+        return {
+            'username': username,
+            'ho_ten': ho_ten,
+            'cccd': cccd,
+            'password': password
+        }
+
+    @staticmethod
+    def validate_import_row(username: str, cccd: str = None) -> list:
+        """
+        Xử lý kiểm tra bảo mật và trùng lặp cho riêng 1 dòng dữ liệu Excel.
+        Trả về danh sách các lỗi phát hiện được trên dòng đó.
+        """
+        row_errors = []
+
+        # 1. Check Username
+        if not username or username == 'nan':
+            row_errors.append("Tên đăng nhập không được để trống.")
+        elif NguoiDung.objects.filter(username=username).exists():
+            row_errors.append(f"Tên đăng nhập '{username}' đã tồn tại trên hệ thống.")
+
+        # 2. Check CCCD (Nếu có nhập)
+        if cccd and cccd != 'nan':
+            if NguoiDung.objects.filter(cccd=cccd).exists():
+                row_errors.append(f"Số CCCD '{cccd}' đã được đăng ký bởi tài khoản khác.")
+
+        return row_errors
+

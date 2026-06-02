@@ -79,3 +79,45 @@ class BangDiem(models.Model):
 
     def __str__(self):
         return f"{self.hoc_sinh.ma_hoc_sinh} - {self.mon_hoc.ten_mon} - HK{self.hoc_ky}"
+
+
+# 7. BẢNG THỜI KHÓA BIỂU (PHÂN CÔNG GIẢNG DẠY)
+class ThoiKhoaBieu(models.Model):
+    THU_CHOICES = (
+        (2, 'Thứ 2'), (3, 'Thứ 3'), (4, 'Thứ 4'),
+        (5, 'Thứ 5'), (6, 'Thứ 6'), (7, 'Thứ 7'),
+    )
+
+    giao_vien = models.ForeignKey(GiaoVien, on_delete=models.CASCADE, related_name='lich_day')
+    lop_hoc = models.ForeignKey(LopHoc, on_delete=models.CASCADE, related_name='thoi_khoa_bieu')
+    mon_hoc = models.ForeignKey(MonHoc, on_delete=models.CASCADE)
+    thu_trong_tuan = models.IntegerField(choices=THU_CHOICES)
+    tiet_hoc = models.IntegerField()  # Từ tiết 1 đến tiết 10
+
+    class Meta:
+        # Ràng buộc: 1 Giáo viên không thể dạy 2 lớp cùng 1 lúc (Cùng thứ, cùng tiết)
+        unique_together = ['giao_vien', 'thu_trong_tuan', 'tiet_hoc']
+
+    def __str__(self):
+        return f"{self.giao_vien.user.ho_ten} dạy {self.lop_hoc.ten_lop} - Tiết {self.tiet_hoc} Thứ {self.thu_trong_tuan}"
+
+
+# 8. BẢNG ĐÁNH GIÁ CHUYÊN CẦN
+class DanhGiaChuyenCan(models.Model):
+    LOAI_VI_PHAM_CHOICES = (
+        ('vang_phep', 'Vắng có phép'),
+        ('vang_khong_phep', 'Vắng không phép'),
+        ('tre', 'Đi trễ'),
+        ('vi_pham_noi_quy', 'Vi phạm nội quy'),
+    )
+
+    hoc_sinh = models.ForeignKey(HocSinh, on_delete=models.CASCADE, related_name='danh_gia_chuyen_can')
+    lop_hoc = models.ForeignKey(LopHoc, on_delete=models.CASCADE)
+    ngay_danh_gia = models.DateField(auto_now_add=True)
+    loai_vi_pham = models.CharField(max_length=20, choices=LOAI_VI_PHAM_CHOICES)
+    chi_tiet = models.TextField(help_text="Ghi chú chi tiết lỗi hoặc lý do")
+    giao_vien_danh_gia = models.ForeignKey(GiaoVien, on_delete=models.SET_NULL, null=True)
+
+    def __str__(self):
+        # return f"{self.hoc_sinh.user.ho_ten} - {self.get_loai_vi_pham_display()}"
+        return f"{self.hoc_sinh.user.ho_ten}"
