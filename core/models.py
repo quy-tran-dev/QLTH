@@ -100,24 +100,3 @@ class ThoiKhoaBieu(models.Model):
 
     def __str__(self):
         return f"{self.giao_vien.user.ho_ten} dạy {self.lop_hoc.ten_lop} - Tiết {self.tiet_hoc} Thứ {self.thu_trong_tuan}"
-
-
-# 8. BẢNG ĐÁNH GIÁ CHUYÊN CẦN
-class DanhGiaChuyenCan(models.Model):
-    LOAI_VI_PHAM_CHOICES = (
-        ('vang_phep', 'Vắng có phép'),
-        ('vang_khong_phep', 'Vắng không phép'),
-        ('tre', 'Đi trễ'),
-        ('vi_pham_noi_quy', 'Vi phạm nội quy'),
-    )
-
-    hoc_sinh = models.ForeignKey(HocSinh, on_delete=models.CASCADE, related_name='danh_gia_chuyen_can')
-    lop_hoc = models.ForeignKey(LopHoc, on_delete=models.CASCADE)
-    ngay_danh_gia = models.DateField(auto_now_add=True)
-    loai_vi_pham = models.CharField(max_length=20, choices=LOAI_VI_PHAM_CHOICES)
-    chi_tiet = models.TextField(help_text="Ghi chú chi tiết lỗi hoặc lý do")
-    giao_vien_danh_gia = models.ForeignKey(GiaoVien, on_delete=models.SET_NULL, null=True)
-
-    def __str__(self):
-        # return f"{self.hoc_sinh.user.ho_ten} - {self.get_loai_vi_pham_display()}"
-        return f"{self.hoc_sinh.user.ho_ten}"
