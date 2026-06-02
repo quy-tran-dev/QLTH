@@ -1,12 +1,22 @@
 from rest_framework import viewsets, status
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from core.models import MonHoc
+from core.permissions import IsQuanLy
 from core.serializers import MonHocSerializer
 from core.services import MonHocService
 
 class MonHocViewSet(viewsets.ModelViewSet):
     queryset = MonHoc.objects.all()
     serializer_class = MonHocSerializer
+
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            permission_classes = [IsAuthenticated]
+        else:
+            permission_classes = [IsQuanLy]
+
+        return [permission() for permission in permission_classes]
 
     def list(self, request, *args, **kwargs):
         return Response(self.get_serializer(MonHocService.list(), many=True).data)
