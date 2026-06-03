@@ -34,6 +34,7 @@ class GiaoVien(models.Model):
     user = models.OneToOneField(NguoiDung, on_delete=models.CASCADE, related_name='giao_vien_profile')
     ma_giao_vien = models.CharField(max_length=20, unique=True)
     to_bo_mon = models.CharField(max_length=100, null=True, blank=True)  # VD: Tổ Toán - Tin
+    bo_mon = models.CharField(max_length=100, null=True, blank=True)
 
     def __str__(self):
         return self.ma_giao_vien
@@ -91,12 +92,14 @@ class ThoiKhoaBieu(models.Model):
     giao_vien = models.ForeignKey(GiaoVien, on_delete=models.CASCADE, related_name='lich_day')
     lop_hoc = models.ForeignKey(LopHoc, on_delete=models.CASCADE, related_name='thoi_khoa_bieu')
     mon_hoc = models.ForeignKey(MonHoc, on_delete=models.CASCADE)
+
+    ma_tkb = models.CharField(max_length=50, help_text="VD: TKB_KHOI10_THANG6_2026")
+    ngay_hoc = models.DateField()  # Ngày cụ thể: 2026-06-08
     thu_trong_tuan = models.IntegerField(choices=THU_CHOICES)
-    tiet_hoc = models.IntegerField()  # Từ tiết 1 đến tiết 10
+    tiet_hoc = models.IntegerField()  # Tiết 1 -> 10
 
     class Meta:
-        # Ràng buộc: 1 Giáo viên không thể dạy 2 lớp cùng 1 lúc (Cùng thứ, cùng tiết)
-        unique_together = ['giao_vien', 'thu_trong_tuan', 'tiet_hoc']
+        unique_together = ['giao_vien', 'ngay_hoc', 'tiet_hoc']
 
     def __str__(self):
-        return f"{self.giao_vien.user.ho_ten} dạy {self.lop_hoc.ten_lop} - Tiết {self.tiet_hoc} Thứ {self.thu_trong_tuan}"
+        return f"{self.giao_vien.user.ho_ten} dạy {self.lop_hoc.ten_lop} - Tiết {self.tiet_hoc} Thứ {self.thu_trong_tuan} - Ngày {self.ngay_hoc}"

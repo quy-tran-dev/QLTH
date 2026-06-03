@@ -26,7 +26,7 @@ class HocSinhAdmin(admin.ModelAdmin):
 
 @admin.register(GiaoVien)
 class GiaoVienAdmin(admin.ModelAdmin):
-    list_display = ('ma_giao_vien', 'get_ho_ten', 'to_bo_mon')
+    list_display = ('ma_giao_vien', 'get_ho_ten', 'to_bo_mon', 'bo_mon')
     search_fields = ('ma_giao_vien', 'user__ho_ten')
 
     def get_ho_ten(self, obj):

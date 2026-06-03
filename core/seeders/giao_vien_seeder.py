@@ -23,15 +23,15 @@ class GiaoVienSeeder:
         cau_hinh_danh_ngach = {
             'TOAN': 5,
             'VAN': 5,
-            'ANH': 3,
+            'ANH': 5,
             'LY': 3,
             'HOA': 3,
             'SINH': 3,
             'SU': 3,
             'DIA': 3,
             'GDCD': 3,
-            'TIN': 3,
-            'TD': 3
+            'TIN': 2,
+            'TD': 2
         }
 
         # Các môn thuộc tổ Xã Hội (để tự động phân tổ bộ môn)
@@ -82,7 +82,8 @@ class GiaoVienSeeder:
                     'password': '123456',  # Mật khẩu mặc định đúng bài bạn gán
                     'ho_ten': ho_ten,
                     'cccd': cccd,
-                    'to_bo_mon': to_bo_mon
+                    'to_bo_mon': to_bo_mon,
+                    'bo_mon': ma_mon,
                 }
 
                 try:
