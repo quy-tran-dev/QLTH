@@ -3,4 +3,4 @@ from .hoc_sinh_serializer import HocSinhSerializer
 from .giao_vien_serializer import GiaoVienSerializer
 from .lop_hoc_serializer import LopHocSerializer
 from .mon_hoc_serializer import MonHocSerializer
-from .nghiep_vu_serializer import ThoiKhoaBieuSerializer, DanhGiaChuyenCanSerializer, BangDiemSerializer
+from .nghiep_vu_serializer import ThoiKhoaBieuSerializer, BangDiemSerializer
