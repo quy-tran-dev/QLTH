@@ -11,7 +11,7 @@ class MonHocSeeder:
         danh_sach_mon = [
             {'ma_mon': 'TOAN', 'ten_mon': 'Toán Học', 'he_so': 2},
             {'ma_mon': 'VAN', 'ten_mon': 'Ngữ Văn', 'he_so': 2},
-            {'ma_mon': 'ANH', 'ten_mon': 'Tiếng Anh', 'he_so': 1},
+            {'ma_mon': 'ANH', 'ten_mon': 'Tiếng Anh', 'he_so': 2},
             {'ma_mon': 'LY', 'ten_mon': 'Vật Lý', 'he_so': 1},
             {'ma_mon': 'HOA', 'ten_mon': 'Hóa Học', 'he_so': 1},
             {'ma_mon': 'SINH', 'ten_mon': 'Sinh Học', 'he_so': 1},

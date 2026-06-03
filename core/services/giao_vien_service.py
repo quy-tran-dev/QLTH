@@ -33,7 +33,8 @@ class GiaoVienService:
             return GiaoVien.objects.create(
                 user=user,
                 ma_giao_vien=ma_tu_dong,
-                to_bo_mon=data.get('to_bo_mon', '')
+                to_bo_mon=data.get('to_bo_mon', ''),
+                bo_mon=data.get('bo_mon', '')
             )
 
     @staticmethod
@@ -62,6 +63,9 @@ class GiaoVienService:
             if 'to_bo_mon' in data:
                 gv.to_bo_mon = data['to_bo_mon']
 
+            if 'bo_mon' in data:
+                gv.to_bo_mon = data['bo_mon']
+
             gv.save()
             return gv
 
@@ -80,10 +84,10 @@ class GiaoVienService:
     @staticmethod
     def export_template():
         """Tạo ra một file Excel mẫu trắng để điền danh sách Giáo viên"""
-        df = pd.DataFrame(columns=['STT', 'Họ Tên', 'CCCD', 'Tên Đăng Nhập', 'Mật Khẩu', 'Tổ Bộ Môn'])
+        df = pd.DataFrame(columns=['STT', 'Họ Tên', 'CCCD', 'Tên Đăng Nhập', 'Mật Khẩu', 'Tổ Bộ Môn', "Bộ Môn"])
 
         # Điền sẵn 1 dòng dữ liệu mẫu chuẩn để người dùng dễ hình dung
-        df.loc[0] = [1, 'Nguyễn Văn Toán', '001099123456', 'gvtoan', '123456', 'Tự Nhiên']
+        df.loc[0] = [1, 'Nguyễn Văn Toán', '001099123456', 'gvtoan', '123456', 'Tự Nhiên', "Toán"]
 
         output = BytesIO()
         with pd.ExcelWriter(output, engine='openpyxl') as writer:
@@ -144,8 +148,11 @@ class GiaoVienService:
                         to_bo_mon_val = str(row.get('Tổ Bộ Môn', '')).strip()
                         to_bo_mon = '' if to_bo_mon_val == 'nan' else to_bo_mon_val
 
+                        bo_mon_val = str(row.get('Bộ Môn', '')).strip()
+                        bo_mon = '' if bo_mon_val == 'nan' else bo_mon_val
+
                         ma_gv = GiaoVienService._tao_ma_giao_vien()
-                        GiaoVien.objects.create(user=user, ma_giao_vien=ma_gv, to_bo_mon=to_bo_mon)
+                        GiaoVien.objects.create(user=user, ma_giao_vien=ma_gv, to_bo_mon=to_bo_mon, bo_mon=bo_mon)
                         success_count += 1
 
                 # Kết thúc duyệt file: Nếu mảng gom lỗi có chứa phần tử, ném Exception để Rollback toàn bộ DB

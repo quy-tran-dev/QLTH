@@ -7,4 +7,4 @@ class GiaoVienSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = GiaoVien
-        fields = ['id', 'ma_giao_vien', 'user', 'to_bo_mon']
+        fields = ['id', 'ma_giao_vien', 'user', 'to_bo_mon', "bo_mon"]
