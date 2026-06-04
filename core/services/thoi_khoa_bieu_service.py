@@ -84,13 +84,12 @@ class ThoiKhoaBieuService:
 
         return ThoiKhoaBieu.objects.bulk_create(cac_doi_tuong_tkb)
 
-
     @staticmethod
     def import_excel_sinh_lich(file_obj, ma_tkb_moi: str, ngay_bat_dau: date, ngay_ket_thuc: date,
                                ma_tkb_cu: str = None) -> int:
         try:
-            if ma_tkb_cu:
-                ThoiKhoaBieu.objects.filter(ma_tkb=ma_tkb_cu, ngay_hoc__gte=ngay_bat_dau).delete()
+            if ma_tkb_cu and str(ma_tkb_cu).strip() not in ['None', 'null', 'undefined', '']:
+                ThoiKhoaBieu.objects.filter(ma_tkb=str(ma_tkb_cu).strip(), ngay_hoc__gte=ngay_bat_dau).delete()
 
             df = pd.read_excel(file_obj)
             df = df.dropna(how='all')
