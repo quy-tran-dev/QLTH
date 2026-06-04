@@ -48,7 +48,7 @@ class IsGiaoVienCuaLop(BasePermission):
     message = "CẢNH BÁO: Bạn không được phân công giảng dạy lớp này, không có quyền can thiệp!"
 
     def has_permission(self, request, view):
-        # 1. Chắc chắn phải là Giáo viên mới được nói chuyện tiếp
+        # 1. Chắc chắn phải là Giáo viên
         if getattr(request.user, 'vai_tro', None) != 'giao_vien':
             return False
 
@@ -65,7 +65,7 @@ class IsGiaoVienCuaLop(BasePermission):
         if not lop_hoc_id:
             return True
 
-        # 3. TRUY VẤN XUYÊN THẤU: Kiểm tra bảng Thời Khóa Biểu
+        # 3. Kiểm tra bảng Thời Khóa Biểu
         # Xem user này có dạy lớp học này không?
         co_day_lop_nay = ThoiKhoaBieu.objects.filter(
             giao_vien__user=request.user, # Lọc theo User đang đăng nhập

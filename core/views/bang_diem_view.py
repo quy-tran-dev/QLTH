@@ -16,13 +16,13 @@ class BangDiemViewSet(viewsets.ModelViewSet):
     serializer_class = BangDiemSerializer
 
     # ==========================================
-    # API 1: TẢI FILE MẪU NHẬP ĐIỂM THEO LỚP (GET /api/bang-diem/export-mau/?lop_hoc_id=1&mon_hoc_id=2&hoc_ky=1)
+    #  TẢI FILE MẪU NHẬP ĐIỂM THEO LỚP (GET /api/bang-diem/export-mau/?lop_hoc_id=1&mon_hoc_id=2&hoc_ky=1)
     # ==========================================
     @action(
         detail=False,
         methods=['get'],
         url_path='export-mau',
-        permission_classes=[IsQuanLy | IsGiaoVienCuaLop]  # Quản lý hoặc GV dạy lớp đó mới được tải
+        permission_classes=[IsQuanLy | IsGiaoVienCuaLop]
     )
     def download_mau_diem(self, request):
         lop_hoc_id = request.query_params.get('lop_hoc_id')
@@ -44,7 +44,7 @@ class BangDiemViewSet(viewsets.ModelViewSet):
             return Response({"error": str(e)}, status=400)
 
     # ==========================================
-    # API 2: IMPORT FILE EXCEL BẢNG ĐIỂM (POST /api/bang-diem/import-excel/)
+    # IMPORT FILE EXCEL BẢNG ĐIỂM (POST /api/bang-diem/import-excel/)
     # ==========================================
     @action(
         detail=False,
@@ -69,7 +69,6 @@ class BangDiemViewSet(viewsets.ModelViewSet):
                             status=status.HTTP_200_OK)
 
         except ExcelImportException as ex:
-            # Nếu giáo viên nhập điểm bậy bạ (ví dụ dòng 3 nhập điểm 15, dòng 4 nhập chữ 'A')
             return Response({
                 "error_type": "EXCEL_VALIDATION_FAILED",
                 "message": "File Excel bảng điểm chứa dữ liệu không hợp lệ.",

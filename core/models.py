@@ -63,26 +63,24 @@ class HocSinh(models.Model):
         return self.ma_hoc_sinh
 
 
-# 6. BẢNG ĐIỂM SỐ (Dùng cho tính năng Excel sau này)
+# 6. BẢNG ĐIỂM SỐ
 class BangDiem(models.Model):
     hoc_sinh = models.ForeignKey(HocSinh, on_delete=models.CASCADE, related_name='bang_diem')
     mon_hoc = models.ForeignKey(MonHoc, on_delete=models.CASCADE, related_name='diem_cac_lop')
     hoc_ky = models.IntegerField(choices=((1, 'Học kỳ 1'), (2, 'Học kỳ 2')))
 
-    # Cho phép null=True để giáo viên tạo dòng trước, nhập điểm sau
     diem_15p = models.FloatField(null=True, blank=True)
     diem_giua_ky = models.FloatField(null=True, blank=True)
     diem_cuoi_ky = models.FloatField(null=True, blank=True)
 
     class Meta:
-        # RÀNG BUỘC CỰC KỲ QUAN TRỌNG: 1 học sinh chỉ có 1 bảng điểm Toán trong 1 học kỳ
         unique_together = ['hoc_sinh', 'mon_hoc', 'hoc_ky']
 
     def __str__(self):
         return f"{self.hoc_sinh.ma_hoc_sinh} - {self.mon_hoc.ten_mon} - HK{self.hoc_ky}"
 
 
-# 7. BẢNG THỜI KHÓA BIỂU (PHÂN CÔNG GIẢNG DẠY)
+# 7. BẢNG THỜI KHÓA BIỂU
 class ThoiKhoaBieu(models.Model):
     THU_CHOICES = (
         (2, 'Thứ 2'), (3, 'Thứ 3'), (4, 'Thứ 4'),

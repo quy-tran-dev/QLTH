@@ -37,5 +37,4 @@ class MonHocService:
 
     @staticmethod
     def delete(mon_hoc_id):
-        # Lưu ý: Vì ở model set CASCADE, xóa Môn Học sẽ xóa luôn toàn bộ Điểm của môn đó
         MonHoc.objects.get(pk=mon_hoc_id).delete()

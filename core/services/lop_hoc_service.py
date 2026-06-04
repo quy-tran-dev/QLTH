@@ -24,7 +24,6 @@ class LopHocService:
 
     @staticmethod
     def list():
-        # Dùng select_related join thẳng sang GiaoVien và NguoiDung để chống N+1 Query
         return LopHoc.objects.select_related('giao_vien_chu_nhiem', 'giao_vien_chu_nhiem__user').all()
 
     @staticmethod
@@ -57,25 +56,18 @@ class LopHocService:
 
     @staticmethod
     def delete(lop_hoc_id):
-        # Do cài SET_NULL ở model, xóa Lớp Học sẽ không xóa Học Sinh, chỉ update cột lop_hoc_id của HS thành null
         LopHoc.objects.get(pk=lop_hoc_id).delete()
 
     @staticmethod
     def export_danh_sach_hoc_sinh(ma_lop: str):
-        """
-        Truy vấn danh sách học sinh thuộc mã lớp yêu cầu
-        và xuất ra file Excel dữ liệu sạch.
-        """
-        # 1. Kiểm tra lớp học có tồn tại không
+
         try:
             lop = LopHoc.objects.get(ma_lop=ma_lop)
         except LopHoc.DoesNotExist:
             raise ValueError(f"Không tìm thấy lớp học nào có mã '{ma_lop}'")
 
-        # 2. Lấy danh sách học sinh của lớp (tối ưu query bằng select_related)
         hoc_sinh_list = HocSinh.objects.filter(lop_hoc=lop).select_related('user')
 
-        # 3. Chuẩn bị mảng dữ liệu để ném vào DataFrame
         data_rows = []
         for index, hs in enumerate(hoc_sinh_list):
             data_rows.append({
@@ -87,14 +79,11 @@ class LopHocService:
                 'Trạng Thái': 'Đang học' if hs.user.trang_thai else 'Đã nghỉ/Khóa'
             })
 
-        # 4. Tạo DataFrame bằng Pandas
         df = pd.DataFrame(data_rows)
 
-        # Trường hợp lớp chưa có học sinh nào, tạo khung cột trống để file xuất ra không bị lỗi
         if df.empty:
             df = pd.DataFrame(columns=['STT', 'Mã Học Sinh', 'Họ Tên', 'Tên Đăng Nhập', 'Số CCCD', 'Trạng Thái'])
 
-        # 5. Ghi dữ liệu ra RAM bằng BytesIO
         output = BytesIO()
         with pd.ExcelWriter(output, engine='openpyxl') as writer:
             df.to_excel(writer, index=False, sheet_name=f"Danh_Sach_Lop_{ma_lop}")

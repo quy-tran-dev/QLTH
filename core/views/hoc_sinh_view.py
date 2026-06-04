@@ -39,7 +39,6 @@ class HocSinhViewSet(viewsets.ModelViewSet):
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-    # Ghi đè API POST (Tạo mới)
     def create(self, request, *args, **kwargs):
         try:
             student = HocSinhService.create(request.data)
@@ -47,7 +46,6 @@ class HocSinhViewSet(viewsets.ModelViewSet):
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-    # Ghi đè API PUT/PATCH (Cập nhật)
     def update(self, request, *args, **kwargs):
         try:
             student_id = kwargs.get('pk')  # Lấy ID từ URL
@@ -56,7 +54,6 @@ class HocSinhViewSet(viewsets.ModelViewSet):
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-    # Ghi đè API DELETE (Xóa/Khóa)
     def destroy(self, request, *args, **kwargs):
         try:
             HocSinhService.delete(kwargs.get('pk'))
@@ -72,13 +69,12 @@ class HocSinhViewSet(viewsets.ModelViewSet):
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-    # API 1: TẢI FILE MẪU EXCEL (GET /api/hoc-sinh/export-template/)
+    # TẢI FILE MẪU EXCEL (GET /api/hoc-sinh/export-template/)
     # ==========================================
     @action(detail=False, methods=['get'], url_path='export-template')
     def download_template(self, request):
         output = HocSinhService.export_template()
 
-        # Cấu hình header để trình duyệt hiểu đây là file Excel và tự động tải về
         response = HttpResponse(
             output.read(),
             content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
@@ -87,7 +83,7 @@ class HocSinhViewSet(viewsets.ModelViewSet):
         return response
 
     # ==========================================
-    # API 2: IMPORT FILE EXCEL (POST /api/hoc-sinh/import-excel/)
+    # IMPORT FILE EXCEL (POST /api/hoc-sinh/import-excel/)
     # ==========================================
     @action(
         detail=False,
@@ -107,7 +103,6 @@ class HocSinhViewSet(viewsets.ModelViewSet):
                             status=status.HTTP_200_OK)
 
         except ExcelImportException as ex:
-            # TRẢ VỀ CỤC JSON ERROR SIÊU ĐẸP CHO FRONTEND ĐỌC ĐỂ MAP LÊN GIAO DIỆN
             return Response({
                 "error_type": "EXCEL_VALIDATION_FAILED",
                 "message": "File Excel chứa dữ liệu không hợp lệ. Vui lòng sửa lại các dòng sau đây.",

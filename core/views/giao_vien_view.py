@@ -58,7 +58,6 @@ class GiaoVienViewSet(viewsets.ModelViewSet):
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-    # Tuyến đường phụ (Extra Route) để khôi phục tài khoản
     @action(detail=True, methods=['post'], url_path='recover')
     def recover_account(self, request, pk=None):
         try:
@@ -67,7 +66,7 @@ class GiaoVienViewSet(viewsets.ModelViewSet):
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-    # API 1: TẢI FILE MẪU EXCEL GIÁO VIÊN (GET /api/giao-vien/export-template/)
+    # TẢI FILE MẪU EXCEL GIÁO VIÊN (GET /api/giao-vien/export-template/)
     # ==========================================
     @action(detail=False, methods=['get'], url_path='export-template')
     def download_template(self, request):
@@ -81,14 +80,14 @@ class GiaoVienViewSet(viewsets.ModelViewSet):
         return response
 
     # ==========================================
-    # API 2: IMPORT FILE EXCEL GIÁO VIÊN (POST /api/giao-vien/import-excel/)
+    # IMPORT FILE EXCEL GIÁO VIÊN (POST /api/giao-vien/import-excel/)
     # ==========================================
     @action(
         detail=False,
         methods=['post'],
         url_path='import-excel',
         parser_classes=[MultiPartParser, FormParser],
-        permission_classes=[IsQuanLy]  # Chỉ Quản lý hệ thống mới có quyền import hàng loạt giáo viên
+        permission_classes=[IsQuanLy]
     )
     def import_excel_data(self, request):
         file_obj = request.FILES.get('file')
@@ -101,7 +100,6 @@ class GiaoVienViewSet(viewsets.ModelViewSet):
             count = GiaoVienService.import_excel(file_obj)
             return Response({"msg": f"Đã import thành công {count} giáo viên vào hệ thống!"}, status=status.HTTP_200_OK)
 
-        # 1. BẮT LỖI CẤU TRÚC JSON CHO FILE EXCEL GIÁO VIÊN
         except ExcelImportException as ex:
             return Response({
                 "error_type": "EXCEL_VALIDATION_FAILED",
@@ -109,6 +107,5 @@ class GiaoVienViewSet(viewsets.ModelViewSet):
                 "chi_tiet_loi": ex.error_details
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        # 2. Bắt các lỗi hệ thống hoặc logic thông thường khác
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)

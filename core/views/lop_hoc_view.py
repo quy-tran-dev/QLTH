@@ -49,13 +49,13 @@ class LopHocViewSet(viewsets.ModelViewSet):
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
     # =========================================================================
-    # API: XUẤT EXCEL DANH SÁCH HỌC SINH (GET /api/lop-hoc/export-hoc-sinh/?ma_lop=10A1)
+    # XUẤT EXCEL DANH SÁCH HỌC SINH (GET /api/lop-hoc/export-hoc-sinh/?ma_lop=10A1)
     # =========================================================================
     @action(
         detail=False,
         methods=['get'],
         url_path='export-hoc-sinh',
-        permission_classes=[IsQuanLy]  # Chỉ quản lý mới được phép gọi
+        permission_classes=[IsQuanLy]
     )
     def export_hoc_sinh_theo_lop(self, request):
         ma_lop = request.query_params.get('ma_lop')
