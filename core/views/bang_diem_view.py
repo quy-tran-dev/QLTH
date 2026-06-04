@@ -4,10 +4,10 @@ from rest_framework.decorators import action
 from rest_framework.parsers import MultiPartParser, FormParser
 from django.http import HttpResponse
 
+from core.exceptions import ExcelImportException
 from core.models import BangDiem
 from core.serializers.nghiep_vu_serializer import BangDiemSerializer
 from core.services.bang_diem_service import BangDiemService
-from core.services.hoc_sinh_service import ExcelImportException
 from core.permissions import IsQuanLy, IsGiaoVienCuaLop
 
 
@@ -39,6 +39,37 @@ class BangDiemViewSet(viewsets.ModelViewSet):
                 content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
             )
             response['Content-Disposition'] = f'attachment; filename="{filename}"'
+            response['Access-Control-Expose-Headers'] = 'Content-Disposition'
+            return response
+        except Exception as e:
+            return Response({"error": str(e)}, status=400)
+
+    @action(
+        detail=False,
+        methods=['get'],
+        url_path='export-diem',
+        permission_classes=[IsQuanLy | IsGiaoVienCuaLop]
+    )
+    def export_diem_da_nhap(self, request):
+        lop_hoc_id = request.query_params.get('lop_hoc_id')
+        mon_hoc_id = request.query_params.get('mon_hoc_id')
+        hoc_ky = request.query_params.get('hoc_ky', 1)
+
+        if not lop_hoc_id or not mon_hoc_id:
+            return Response({"error": "Vui lòng cung cấp 'lop_hoc_id' và 'mon_hoc_id' qua query params!"}, status=400)
+
+        try:
+            # Gọi hàm xuất Bảng Điểm có chứa dữ liệu thực
+            output, filename = BangDiemService.export_bang_diem_theo_lop_co_diem(lop_hoc_id, mon_hoc_id, hoc_ky)
+
+            response = HttpResponse(
+                output.read(),
+                content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            )
+            response['Content-Disposition'] = f'attachment; filename="{filename}"'
+
+            response['Access-Control-Expose-Headers'] = 'Content-Disposition'
+
             return response
         except Exception as e:
             return Response({"error": str(e)}, status=400)

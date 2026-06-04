@@ -72,6 +72,7 @@ class LopHocViewSet(viewsets.ModelViewSet):
                 content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
             )
             response['Content-Disposition'] = f'attachment; filename="{filename}"'
+            response['Access-Control-Expose-Headers'] = 'Content-Disposition'
             return response
 
         except ValueError as val_err:

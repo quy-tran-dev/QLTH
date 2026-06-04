@@ -77,6 +77,7 @@ class GiaoVienViewSet(viewsets.ModelViewSet):
             content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         )
         response['Content-Disposition'] = 'attachment; filename="Mau_Import_Giao_Vien.xlsx"'
+        response['Access-Control-Expose-Headers'] = 'Content-Disposition'
         return response
 
     # ==========================================

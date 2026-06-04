@@ -1,7 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from core.views import HocSinhViewSet, GiaoVienViewSet, LopHocViewSet, MonHocViewSet, ThoiKhoaBieuViewSet, \
-    BangDiemViewSet
+from core.views import HocSinhViewSet, GiaoVienViewSet, LopHocViewSet, MonHocViewSet, ThoiKhoaBieuViewSet, BangDiemViewSet
 from core.views.auth_view import ForgotPasswordView, ResetPasswordView, LoginView
 
 router = DefaultRouter()
