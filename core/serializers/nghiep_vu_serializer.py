@@ -21,7 +21,6 @@ class ThoiKhoaBieuSerializer(serializers.ModelSerializer):
             from core.services.thoi_khoa_bieu_service import ThoiKhoaBieuService
             return ThoiKhoaBieuService.validate_and_create_tkb(validated_data)
         except Exception as e:
-            # Bắn lỗi text Tiếng Việt từ Service ra ngoài JSON trả về cho Frontend
             raise serializers.ValidationError({"detail": str(e).replace("[", "").replace("]", "").replace("'", "")})
 
 

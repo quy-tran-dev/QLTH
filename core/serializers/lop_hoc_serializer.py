@@ -3,10 +3,8 @@ from core.models import LopHoc
 
 
 class LopHocSerializer(serializers.ModelSerializer):
-    # Nhận ID giáo viên từ client khi POST/PUT
     giao_vien_chu_nhiem_id = serializers.IntegerField(write_only=True, required=False, allow_null=True)
 
-    # Show tên giáo viên và mã GV cho đẹp khi GET
     ten_giao_vien = serializers.CharField(source='giao_vien_chu_nhiem.user.ho_ten', read_only=True)
     ma_giao_vien = serializers.CharField(source='giao_vien_chu_nhiem.ma_giao_vien', read_only=True)
 

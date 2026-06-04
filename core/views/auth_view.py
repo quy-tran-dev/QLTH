@@ -11,7 +11,7 @@ class LoginView(TokenObtainPairView):
 
 
 class ForgotPasswordView(APIView):
-    permission_classes = [AllowAny]  # Ai cũng gọi được vì đã quên pass
+    permission_classes = [AllowAny]
 
     def post(self, request):
         username = request.data.get('username')
@@ -21,13 +21,11 @@ class ForgotPasswordView(APIView):
         try:
             token = NguoiDungService.generate_reset_password_token(username)
 
-            # Thực tế: Đoạn này bạn sẽ viết hàm gửi token này vào Email của User.
-            # Local/Test: Chúng ta in ra Terminal để copy và trả về JSON luôn cho tiện test Postman.
             print(f"\n[RESET PASSWORD TOKEN FOR {username}]: {token}\n")
 
             return Response({
                 "msg": "Tạo mã khôi phục thành công! (Mã có hiệu lực trong 15 phút)",
-                "token": token  # Trả về luôn để bạn dễ test
+                "token": token
             }, status=status.HTTP_200_OK)
 
         except Exception as e:

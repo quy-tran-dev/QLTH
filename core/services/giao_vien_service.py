@@ -1,4 +1,5 @@
 from django.db import transaction
+from django.db.models.functions import Length
 
 from core.exceptions import ExcelImportException
 from core.models import GiaoVien
@@ -11,23 +12,25 @@ from io import BytesIO
 class GiaoVienService:
     @staticmethod
     def _tao_ma_giao_vien():
-        # Sinh mã tự động: GV2026001
         year = datetime.now().year
         prefix = f"GV{year}"
-        last_gv = GiaoVien.objects.filter(ma_giao_vien__startswith=prefix).order_by('-ma_giao_vien').first()
+
+        last_gv = GiaoVien.objects.filter(
+            ma_giao_vien__startswith=prefix
+        ).order_by(Length('ma_giao_vien').desc(), '-ma_giao_vien').first()
 
         if last_gv:
-            last_number = int(last_gv.ma_giao_vien[-3:])
+            last_number = int(last_gv.ma_giao_vien[len(prefix):])
+
             return f"{prefix}{last_number + 1:03d}"
+
         return f"{prefix}001"
 
     @staticmethod
     def create(data):
         with transaction.atomic():
-            # 1. ỦY QUYỀN TẠO USER (Truyền cứng role là giao_vien)
             user = NguoiDungService.create_profile(data, vai_tro='giao_vien')
 
-            # 2. XỬ LÝ VIỆC CỦA GIÁO VIÊN
             ma_tu_dong = GiaoVienService._tao_ma_giao_vien()
 
             return GiaoVien.objects.create(
@@ -50,21 +53,13 @@ class GiaoVienService:
         with transaction.atomic():
             gv = GiaoVien.objects.select_related('user').get(pk=gv_id)
 
-            # 1. ỦY QUYỀN: Giao phó toàn bộ việc update bảng NguoiDung cho base service
             NguoiDungService.update_profile(gv.user, data)
-
-            # 2. XỬ LÝ RIÊNG: Cập nhật thông tin đặc thù của Giáo Viên
-            if 'ma_giao_vien' in data:
-                new_ma_gv = data['ma_giao_vien']
-                if GiaoVien.objects.filter(ma_giao_vien=new_ma_gv).exclude(pk=gv.pk).exists():
-                    raise ValueError(f"Mã giáo viên '{new_ma_gv}' đã tồn tại!")
-                gv.ma_giao_vien = new_ma_gv
 
             if 'to_bo_mon' in data:
                 gv.to_bo_mon = data['to_bo_mon']
 
             if 'bo_mon' in data:
-                gv.to_bo_mon = data['bo_mon']
+                gv.bo_mon = data['bo_mon']
 
             gv.save()
             return gv

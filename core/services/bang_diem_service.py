@@ -21,17 +21,14 @@ class BangDiemService:
 
     @staticmethod
     def export_template_theo_lop(lop_hoc_id, mon_hoc_id, hoc_ky):
-        """Xuất file Excel chứa sẵn danh sách học sinh của lớp để giáo viên nhập điểm"""
         try:
             lop = LopHoc.objects.get(pk=lop_hoc_id)
             mon = MonHoc.objects.get(pk=mon_hoc_id)
         except (LopHoc.DoesNotExist, MonHoc.DoesNotExist):
             raise ValueError("Lớp học hoặc Môn học không tồn tại!")
 
-        # Lấy danh sách học sinh thuộc lớp này
         hoc_sinh_list = HocSinh.objects.filter(lop_hoc_id=lop_hoc_id).select_related('user')
 
-        # Tạo cấu trúc file Excel mẫu
         data_rows = []
         for index, hs in enumerate(hoc_sinh_list):
             data_rows.append({
@@ -54,13 +51,11 @@ class BangDiemService:
 
     @staticmethod
     def import_excel_diem(file_obj, lop_hoc_id, mon_hoc_id, hoc_ky):
-        """Đọc file Excel điểm, validate dữ liệu từng dòng và thực hiện Upsert"""
         try:
             df = pd.read_excel(file_obj)
         except Exception:
             raise ValueError("File đính kèm không đúng định dạng Excel (.xlsx)")
 
-        # Kiểm tra các cột bắt buộc phải có
         required_cols = ['Mã Học Sinh', 'Điểm 15P', 'Điểm Giữa Kỳ', 'Điểm Cuối Kỳ']
         for col in required_cols:
             if col not in df.columns:
@@ -69,7 +64,6 @@ class BangDiemService:
         all_row_errors = []
         success_count = 0
 
-        # Hàm helper để validate điểm số hợp lệ từ 0 đến 10
         def clean_and_validate_diem(val, col_name):
             if pd.isna(val) or str(val).strip() == '' or str(val).strip().lower() == 'nan':
                 return None
@@ -82,20 +76,18 @@ class BangDiemService:
                 raise ValueError(f"{col_name} không đúng định dạng số.")
 
         try:
-            with transaction.atomic():  # Đảm bảo tính nguyên tử (All or Nothing)
+            with transaction.atomic():
                 for index, row in df.iterrows():
                     row_num = int(str(index)) + 2
                     current_row_errors = []
 
                     ma_hs = str(row.get('Mã Học Sinh', '')).strip()
 
-                    # 1. Kiểm tra mã học sinh có trống không
                     if not ma_hs or ma_hs == 'nan':
                         current_row_errors.append("Mã học sinh không được để trống.")
                         all_row_errors.append({"dong": row_num, "ma_hoc_sinh": "Trống", "loi": current_row_errors})
                         continue
 
-                    # 2. Kiểm tra học sinh có tồn tại và có thuộc lớp này không
                     try:
                         hoc_sinh_obj = HocSinh.objects.get(ma_hoc_sinh=ma_hs, lop_hoc_id=lop_hoc_id)
                     except HocSinh.DoesNotExist:
@@ -103,7 +95,6 @@ class BangDiemService:
                         all_row_errors.append({"dong": row_num, "ma_hoc_sinh": ma_hs, "loi": current_row_errors})
                         continue
 
-                    # 3. Ép kiểu và validate điểm số từ hàm helper
                     diem_15p = None
                     diem_gk = None
                     diem_ck = None
@@ -123,7 +114,6 @@ class BangDiemService:
                     except ValueError as err:
                         current_row_errors.append(str(err))
 
-                    # 4. Gom lỗi nếu dòng này điểm bậy bạ
                     if current_row_errors:
                         all_row_errors.append({
                             "dong": row_num,
@@ -132,10 +122,9 @@ class BangDiemService:
                         })
                         continue
 
-                    # 5. Nếu file sạch hoàn toàn từ đầu đến giờ mới thực hiện Upsert dữ liệu
                     if not all_row_errors:
                         BangDiem.objects.update_or_create(
-                            hoc_sh_id=hoc_sinh_obj.ma_hoc_sinh,  # Tên trường FK trong model BangDiem của bạn
+                            hoc_sh_id=hoc_sinh_obj.ma_hoc_sinh,
                             mon_hoc_id=mon_hoc_id,
                             hoc_ky=int(hoc_ky),
                             defaults={
@@ -146,7 +135,6 @@ class BangDiemService:
                         )
                         success_count += 1
 
-                # Kết thúc duyệt file: Nếu có bất kỳ lỗi nào, Rollback sạch sẽ dữ liệu ngay lập tức
                 if all_row_errors:
                     raise ExcelImportException(error_details=all_row_errors)
 

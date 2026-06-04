@@ -13,7 +13,6 @@ class ThoiKhoaBieuViewSet(viewsets.ModelViewSet):
     serializer_class = ThoiKhoaBieuSerializer
 
     def get_queryset(self):
-        # Đổi tiet_bat_dau thành tiet_hoc, và sort theo ngay_hoc
         queryset = ThoiKhoaBieu.objects.all().order_by('ngay_hoc', 'tiet_hoc')
 
         ma_lop = self.request.query_params.get('ma_lop')
@@ -30,7 +29,7 @@ class ThoiKhoaBieuViewSet(viewsets.ModelViewSet):
         detail=False,
         methods=['post'],
         url_path='cuon-chieu',
-        permission_classes=[IsQuanLy]  # Ăn chặt quyền quản lý tại đây
+        permission_classes=[IsQuanLy]
     )
     def cuon_chieu(self, request):
         ma_tkb_cu = request.data.get('ma_tkb_cu')
@@ -67,7 +66,6 @@ class ThoiKhoaBieuViewSet(viewsets.ModelViewSet):
         ngay_bat_dau_str = request.data.get('ngay_bat_dau')
         ngay_ket_thuc_str = request.data.get('ngay_ket_thuc')
 
-        # ma_tkb_cu giờ là tùy chọn, không bắt buộc nữa
         ma_tkb_cu = request.data.get('ma_tkb_cu')
 
         if not file_obj or not ma_tkb_moi or not ngay_bat_dau_str or not ngay_ket_thuc_str:
